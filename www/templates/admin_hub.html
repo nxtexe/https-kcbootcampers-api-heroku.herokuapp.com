@@ -1,0 +1,570 @@
+{% extends "base.html" %}
+{% block content %}
+<script type="text/python">
+	from browser import document, local_storage, window, aio, ajax
+
+	local_storage.storage['href-location'] = "https://kcbootcampers-api-heroku.herokuapp.com/uploads/"
+	local_storage.storage['curr-location'] = window.location.href
+
+	def file_on_complete(req):
+		src = req.responseText
+		if "<li>" in src:
+			document['temp-folder'].innerHTML = src
+		else:
+			pass
+			
+
+	req = ajax.ajax()
+	req.open('POST', 'https://kcbootcampers-api-heroku.herokuapp.com/uploads')
+	req.bind("complete", file_on_complete)
+	req.send()
+
+	def href_transformer(ev):
+		extensions = ['txt', 'c', 'pdf', 'docx', 'jpg', 'jpeg', 'png', 'gif']
+		if str(ev.target) == '<HTMLAnchorElement object>' and ev.target.class_name != "dropdown-item":
+			if ev.target.class_name == "nav-link active":
+				filename = ""
+				local_storage.storage['href-location'] = "https://kcbootcampers-api-heroku.herokuapp.com/uploads/"
+			else:
+				if ev.target.class_name.strip() != "dropdown-item" and ev.target.class_name.strip() != "other" and ev.target.class_name.strip() != "nav-link":
+					ev.target.href = "#2"
+				filename = ev.target.textContent
+			href = local_storage.storage['href-location'] + filename
+			if href.split('uploads/')[1] != '' and ev.target.textContent != 'Back':
+				local_storage.storage['href-location'] = href + "/"
+			if ev.target.textContent == "Back":
+				if local_storage.storage['href-location'] != "https://kcbootcampers-api-heroku.herokuapp.com/uploads/":
+					test = local_storage.storage['href-location'].split('/')
+					test.pop()
+					test.pop()
+					href = '/'.join(test)
+					local_storage.storage['href-location'] = href + "/"
+				else:
+					href = "#"
+			if ev.target.textContent == "Home":
+				href = 'https://kcbootcampers-api-heroku.herokuapp.com/uploads'
+				local_storage.storage['href-location'] = href + "/"
+			req = ajax.ajax()
+			req.open('POST', href)
+			req.bind("complete", file_on_complete)
+			if href != "#" and ev.target.class_name.strip() != "dropdown-item":
+				try:
+					if ev.target.textContent.split('.')[-1] in extensions:
+						ev.target.href = local_storage.storage['href-location'][:-1]
+						ev.target.target = "_blank"
+						local_storage.storage['href-location'] = local_storage.storage['href-location'].replace(ev.target.textContent, "")
+					else:
+						req.send()
+				except IndexError:
+					req.send()
+
+
+	def get_request(url):
+		req = ajax.ajax()
+		req.open('GET', url)
+		req.bind("complete", file_on_complete)
+		req.send()
+	
+
+	local_storage.storage['admin-link'] = document['admin-link'].href
+
+	document['footer'].style.color = "white"
+
+	def remover(ev):
+		if "Remove" in ev.target.textContent and str(ev.target) == "<HTMLButtonElement object>":
+			url = "https://kcbootcampers-api-heroku.herokuapp.com/admin/posts/remove/" + ev.target.id
+			req = aio.get(url)
+			req.send()
+			ev.target.parentElement.parentElement.style.display = "none"
+	
+
+	def printer(ev):
+		if ev.target.textContent == "Activate" or ev.target.textContent == "Deactivate":
+			url = "https://kcbootcampers-api-heroku.herokuapp.com/" + ev.target.textContent + "/" + ev.target.id
+			if ev.target.textContent == "Deactivate":
+				ev.target.textContent = "Activate"
+				ev.target.class_name = "btn btn-success"
+			else:
+				ev.target.textContent = "Deactivate"
+				ev.target.class_name = "btn btn-danger"
+			req = aio.get(url)
+			req.send()
+		else:
+			url = ""
+
+	original_url = window.location.href
+	def shower(ev):
+		global original_url
+		if ev.target.textContent == "Admin" or ev.target.textContent == "Teacher" or ev.target.textContent == "Student":
+			uri = ev.target.href[ev.target.href.find('#')+1:]
+			url = "https://kcbootcampers-api-heroku.herokuapp.com" + uri
+			if ev.target.textContent == "Admin":
+				uri2 = ev.target.id[ev.target.id.find('link')+len('link')+3:]
+				document['link-1-'+uri2].textContent = "Student"
+				document['link-1-'+uri2].href = "#/admin/make_student/"+uri2
+				document['link-2-'+uri2].textContent = "Teacher"
+				document['link-2-'+uri2].href = "#/admin/make_teacher/"+uri2
+				document['btn-'+uri2].textContent = "Admin"
+				document['btn-'+uri2].class_name = "btn btn-success dropdown-toggle"
+			elif ev.target.textContent == "Teacher":
+				uri2 = ev.target.id[ev.target.id.find('link')+len('link')+3:]
+				document['link-1-'+uri2].textContent = "Admin"
+				document['link-1-'+uri2].href = "#/admin/make_admin/"+uri2
+				document['link-2-'+uri2].textContent = "Student"
+				document['link-2-'+uri2].href = "#/admin/make_student/"+uri2
+				document['btn-'+uri2].textContent = "Teacher"
+				document['btn-'+uri2].class_name = "btn btn-primary dropdown-toggle"
+			elif ev.target.textContent == "Student":
+				uri2 = ev.target.id[ev.target.id.find('link')+len('link')+3:]
+				document['link-1-'+uri2].textContent = "Teacher"
+				document['link-1-'+uri2].href = "#/admin/make_teacher/"+uri2
+				document['link-2-'+uri2].textContent = "Admin"
+				document['link-2-'+uri2].href = "#/admin/make_admin/"+uri2
+				document['btn-'+uri2].textContent = "Student"
+				document['btn-'+uri2].class_name = "btn btn-secondary dropdown-toggle"
+			else:
+				pass
+
+			req = aio.get(url)
+			req.send()
+		else:
+			pass 
+		
+
+
+	def activate_all(ev):
+		req = aio.get('https://kcbootcampers-api-heroku.herokuapp.com/activate_all')
+		window.location.href = local_storage.storage['curr-location']
+		req.send()
+
+	
+	def deactivate_all(ev):
+		req = aio.get('https://kcbootcampers-api-heroku.herokuapp.com/deactivate_all')
+		window.location.href = local_storage.storage['curr-location']
+		req.send()
+
+	
+	document['activate-all'].bind("click", activate_all)
+	document['deactivate-all'].bind("click", deactivate_all)
+	window.bind("click", printer)
+	window.bind("click", remover)
+	window.bind("click", shower)
+	window.bind("click", href_transformer)
+	document['body'].style.backgroundColor = "#343a40"
+</script>
+{{ moment.include_jquery() }}
+{{ moment.include_moment() }}
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active" style="background-color: #343a40; color: white" id="users-tab" data-toggle="tab" href="#users" role="tab" aria-controls="users" aria-selected="true">Users</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" style="background-color: #343a40; color: white" id="posts-tab" data-toggle="tab" href="#posts" role="tab" aria-controls="posts" aria-selected="false">Posts</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" style="background-color: #343a40; color: white" id="assignments-tab" data-toggle="tab" href="#assignments" role="tab" aria-controls="assignments" aria-selected="false">Assignments</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" style="background-color: #343a40; color: white" id="uploads-tab" data-toggle="tab" href="#uploads" role="tab" aria-controls="uploads" aria-selected="false">Uploads</a>
+  </li>
+   <li class="nav-item">
+    <a class="nav-link" style="background-color: #343a40; color: white" id="resources-tab" data-toggle="tab" href="#resources" role="tab" aria-controls="uploads" aria-selected="false">Resources</a>
+  </li>
+</ul>
+<div class="tab-content" id="myTabContent">
+  <div class="tab-pane fade show active" id="users" role="tabpanel" aria-labelledby="users-tab">
+    <div style="display: inline-flex;">
+      <button id="deactivate-all" class="btn btn-danger" style="margin-left: 5px; margin-right: 5px; margin-top: 5px; margin-bottom: 5px">Deactivate All</button>
+      <button id="activate-all" class="btn btn-success" style="float: right; margin-top: 5px; margin-bottom: 5px">Activate All</button>
+    </div>
+    <div class="table-responsive">
+    <table class="table table-dark">
+    <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">First</th>
+      <th scope="col">Last</th>
+      <th scope="col">Email</th>
+      <th scope="col">Phone Number</th>
+      <th scope="col">Status</th>
+      <th scope="col">Activate/Deactivate</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for user in users %}
+    <tr>
+      <th scope="row">{{ loop.index }}</th>
+      <td>{{ user.fname }}</td>
+      <td>{{ user.lname }}</td>
+      <td>{{ user.email }}</td>
+      <td>{{ user.cellphone }}</td>
+      {% if user.email == "name@fake.com" %}
+       <td>
+        <div class="btn-group">
+          <button id="btn-{{ user._id }}" type="button" class="btn btn-success dropdown-toggle" style="width: 100px" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" disabled="">
+              Admin  
+          </button>
+          <div class="dropdown-menu">
+            <a id="link-1-{{ user._id }}" class="dropdown-item" href="#/admin/make_student/{{ user._id }}">Student</a>
+            <a id="link-2-{{ user._id }}" class="dropdown-item" href="#/admin/make_teacher/{{ user._id }}">Teacher</a>
+          </div>
+        </div>
+      </td>
+      {% elif user.status == "*" %}
+      <td>
+        <div class="btn-group">
+          <button id="btn-{{ user._id }}" type="button" class="btn btn-success dropdown-toggle" style="width: 100px" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Admin  
+          </button>
+          <div class="dropdown-menu">
+            <a id="link-1-{{ user._id }}" class="dropdown-item" href="#/admin/make_student/{{ user._id }}">Student</a>
+            <a id="link-2-{{ user._id }}" class="dropdown-item" href="#/admin/make_teacher/{{ user._id }}">Teacher</a>
+          </div>
+        </div>
+      </td>
+      {% elif user.status == "1" %}
+      <td>
+        <div class="btn-group">
+        <button id="btn-{{ user._id }}" type="button" class="btn btn-primary dropdown-toggle" style="width: 100px" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Teacher
+        </button>
+        <div class="dropdown-menu">
+          <a id="link-1-{{ user._id }}" class="dropdown-item" href="#/admin/make_admin/{{ user._id }}">Admin</a>
+          <a id="link-2-{{ user._id }}" class="dropdown-item" href="#/admin/make_student/{{ user._id }}">Student</a>
+        </div>
+      </div>
+      </td>
+      {% else %}
+      <td>
+        <div class="btn-group">
+        <button id="btn-{{ user._id }}" type="button" class="btn btn-secondary dropdown-toggle" style="width: 100px" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Student
+        </button>
+        <div class="dropdown-menu">
+          <a id="link-1-{{ user._id }}" class="dropdown-item" href="#/admin/make_teacher/{{ user._id }}">Teacher</a>
+          <a id="link-2-{{ user._id }}" class="dropdown-item" href="#/admin/make_admin/{{ user._id }}">Admin</a>
+        </div>
+      </div>
+      </td>
+      {% endif %}
+      {% if user.email == "name@fake.com" %}
+      <td><button id="{{ user._id }}" class="btn btn-danger" disabled="">Deactivate</button></td>
+      {% elif user.active == True %}
+      <td><button id="{{ user._id }}" class="btn btn-danger">Deactivate</button></td>
+      {% else %}
+      <td><button id="{{ user._id }}" class="btn btn-success">Activate</button></td>
+      {% endif %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+  </div>
+  <div class="tab-pane fade" id="posts" role="tabpanel" aria-labelledby="posts-tab">
+        <a href="https://kcbootcampers-api-heroku.herokuapp.com/admin/{{ uri }}/posts/create"><button class="btn btn-success" style="margin-left: 5px; margin-top: 5px"><img src="/static/assets/add.png" style="width: 3vw; height: auto;"> Add Post</button></a>
+        {% for post in posts %}
+      <div id="{{ loop.index }}" style="padding-left: 5px">
+        <div style="display: inline-flex;">
+        <h1 style="color: white; padding-right: 5px">{{ post.title }}</h1>
+        <button id="{{ post._id }}" class="btn btn-danger" style="float: right;"><img src="/static/assets/bin-2.png" style="width: 20%; height: auto;"> Remove</button>
+        </div>
+        <p style="color: white">Author: {{ post.author }}</p>
+        <i><p style="color: white">Posted: {{ moment(post.date_created).fromNow(refresh=True) }}</p></i>
+        <p style="color: white">{{ post.short_form }}
+          .... <a class="other" href="/admin/{{ uri }}/post/{{ post._id }}">Read More</a></p>
+	<hr>
+      </div>
+      {% endfor %}
+  </div>
+  <div class="tab-pane fade" id="assignments" role="tabpanel" aria-labelledby="assignments-tab">
+    <a href="https://kcbootcampers-api-heroku.herokuapp.com/admin/{{ uri }}/assignments/create"><button class="btn btn-success" style="margin-left: 5px; margin-top: 5px"><img src="/static/assets/add.png" style="width: 3vw; height: auto;"> Add Assignment</button></a>
+           {% for assignment in assignments %}
+      <div id="{{ loop.index }}" style="padding-left: 5px">
+        <div style="display: inline-flex;">
+        <h1 style="color: white; padding-right: 5px">{{ assignment.title }}</h1>
+        <button id="{{ assignment._id }}" class="btn btn-danger" style="float: right;"><img src="/static/assets/bin-2.png" style="width: 20%; height: auto;"> Remove</button>
+        </div>
+        <p style="color: white">Author: {{ assignment.author }}</p>
+        <i><p style="color: white">Posted: {{ moment(assignment.date_created).fromNow(refresh=True) }}</p></i>
+        <p style="color: white">{{ assignment.short_form }}
+          .... <a class="other" href="/admin/{{ uri }}/assignment/{{ assignment._id }}">Read More</a></p>
+          <i><p style="color: white">Date Due: {{ moment(assignment.date_due).format('LLL') }}</p></i>
+  <hr>
+      </div>
+      {% endfor %}
+  </div>
+  <div class="tab-pane fade" id="uploads" role="tabpanel" aria-labelledby="uploads-tab">
+	<div style="display: inline-flex; padding-left: 20px" id="row">
+		<div id="column1" style="padding-right: 50px">
+			<button class="btn btn-danger"><img src="/static/assets/back.gif" style="padding-right: 2px;"><a href="#2" style="color: white">Back</a></button>
+		</div>
+		<div id="column2" style="float: right">
+			<button class="btn btn-primary"><img src="/static/assets/home.png" style="padding-right: 2px;"><a href="#2" style="color: white">Home</a></button>
+		</div>
+	</div>
+	<hr style="background-color: white">
+    <div id="temp-folder">
+      
+    </div>
+  </div>
+  <script type="text/python">
+	from browser import document, window, ajax
+
+	def book_adder(ev):
+		if ev.target.id == "add-book":
+			document['book-form'].style.display = "inline-flex"
+			window.location.href = window.location.href + "#book-form"
+
+	def hide_book_adder(ev):
+		document['video-form'].style.display = "none"
+
+
+	def book_on_complete(req):
+		pair = eval(req.responseText)
+		document['book-form'].style.display = "none"
+		div = document.createElement('div')
+		div.setAttribute("style", "display: inline-flex")
+		li = document.createElement('li')
+		a = document.createElement('a')
+		a.setAttribute("class", "other")
+		a.setAttribute("href", pair['href'])
+		a.setAttribute("target", "_blank")
+		a <= pair['name']
+		li <= a
+		div <= li
+		btn = document.createElement('button')
+		btn.setAttribute("id", pair['id'])
+		btn.setAttribute("class", "btn btn-danger")
+		btn.setAttribute("style", "margin-left: 5px")
+		btn <= "Remove Link"
+		div <= btn
+		document['all-books'] <= div
+		document['all-books'] <= document.createElement('hr')
+
+
+	def book_sender(ev):
+		req = ajax.ajax()
+		req.open('POST', 'https://kcbootcampers-api-heroku.herokuapp.com/admin/book/create')
+		req.set_header('content-type','application/x-www-form-urlencoded')
+		req.bind('complete', book_on_complete)
+		req.send({'name': document['book-name-name'].value, 'href': document['book-link-name'].value})
+
+
+	def book_remover(ev):
+		if ev.target.textContent.strip() == "Remove Link" and ev.target.parentElement.parentElement.id == "all-books":
+			uri = ev.target.id
+			req = ajax.ajax()
+			req.open('GET', 'https://kcbootcampers-api-heroku.herokuapp.com/admin/book/remove/'+uri)
+			req.send()
+			document['all-books'].style.display = "block"
+			ev.target.parentElement.style.display = "none"
+			ev.target.parentElement.nextElementSibling.style.display = "none"
+
+
+	def video_adder(ev):
+		if ev.target.id == "add-video":
+			document['video-form'].style.display = "inline-flex"
+			window.location.href = window.location.href + "#video-form"
+
+	def hide_video_adder(ev):
+		document['video-form'].style.display = "none"
+
+
+
+
+	def video_on_complete(req):
+		pair = eval(req.responseText)
+		document['video-form'].style.display = "none"
+		div = document.createElement('div')
+		div.setAttribute("style", "display: inline-flex")
+		li = document.createElement('li')
+		a = document.createElement('a')
+		a.setAttribute("class", "other")
+		a.setAttribute("href", pair['href'])
+		a.setAttribute("target", "_blank")
+		a <= pair['name']
+		li <= a
+		div <= li
+		btn = document.createElement('button')
+		btn.setAttribute("id", pair['id'])
+		btn.setAttribute("class", "btn btn-danger")
+		btn.setAttribute("style", "margin-left: 5px")
+		btn <= "Remove Link"
+		div <= btn
+		document['all-videos'] <= div
+		document['all-videos'] <= document.createElement('hr')
+
+
+	def video_sender(ev):
+		req = ajax.ajax()
+		req.open('POST', 'https://kcbootcampers-api-heroku.herokuapp.com/admin/video/create')
+		req.set_header('content-type','application/x-www-form-urlencoded')
+		req.bind('complete', video_on_complete)
+		req.send({'name': document['video-name-name'].value, 'href': document['video-link-name'].value})
+
+
+	def video_remover(ev):
+		if ev.target.textContent.strip() == "Remove Link" and ev.target.parentElement.parentElement.id == "all-videos":
+			uri = ev.target.id
+			req = ajax.ajax()
+			req.open('GET', 'https://kcbootcampers-api-heroku.herokuapp.com/admin/video/remove/'+uri)
+			req.send()
+			document['all-videos'].style.display = "block"
+			ev.target.parentElement.style.display = "none"
+			ev.target.parentElement.nextElementSibling.style.display = "none"
+
+
+
+	def other_adder(ev):
+		if ev.target.id == "add-other":
+			document['other-form'].style.display = "inline-flex"
+			window.location.href = window.location.href + "#other-form"
+
+
+	def hide_other_adder(ev):
+		document['other-form'].style.display = "none"
+
+	def on_complete(req):
+		pair = eval(req.responseText)
+		document['other-form'].style.display = "none"
+		div = document.createElement('div')
+		div.setAttribute("style", "display: inline-flex")
+		li = document.createElement('li')
+		a = document.createElement('a')
+		a.setAttribute("class", "other")
+		a.setAttribute("href", pair['href'])
+		a.setAttribute("target", "_blank")
+		a <= pair['name']
+		li <= a
+		div <= li
+		btn = document.createElement('button')
+		btn.setAttribute("id", pair['id'])
+		btn.setAttribute("class", "btn btn-danger")
+		btn.setAttribute("style", "margin-left: 5px")
+		btn <= "Remove Link"
+		div <= btn
+		document['all-others'] <= div
+		document['all-others'] <= document.createElement('hr')
+			
+
+
+	def other_sender(ev):
+		req = ajax.ajax()
+		req.open('POST', 'https://kcbootcampers-api-heroku.herokuapp.com/admin/other/create')
+		req.set_header('content-type','application/x-www-form-urlencoded')
+		req.bind('complete', on_complete)
+		req.send({'name': document['other-name-name'].value, 'href': document['other-link-name'].value})
+
+
+	def other_remover(ev):
+		if ev.target.textContent.strip() == "Remove Link" and ev.target.parentElement.parentElement.id == "all-others":
+			uri = ev.target.id
+			req = ajax.ajax()
+			req.open('GET', 'https://kcbootcampers-api-heroku.herokuapp.com/admin/other/remove/'+uri)
+			req.send()
+			document['all-others'].style.display = "block"
+			ev.target.parentElement.style.display = "none"
+			ev.target.parentElement.nextElementSibling.style.display = "none"
+
+	
+	document['book-cancel'].bind("click", hide_book_adder)
+	document['other-cancel'].bind("click", hide_other_adder)
+	document['video-cancel'].bind("click", hide_video_adder)
+	document['book-add'].bind("click", book_sender)
+	document['video-add'].bind("click", video_sender)
+	document['other-add'].bind("click", other_sender)
+	window.bind("click", book_remover)
+	window.bind("click", video_remover)
+	window.bind("click", book_adder)
+	window.bind("click", video_adder)
+	window.bind("click", other_adder)
+	window.bind("click", other_remover)
+  </script>
+  <div class="tab-pane fade" id="resources" role="tabpanel" aria-labelledby="resources-tab">
+  	<div id="all-resources" style="margin-left: 5px">
+  		<div id="books">
+  		<div id="books-header" style="display: inline-flex;">
+  			<h1 style="color: white">Books</h1>
+  		<button class="btn btn-success" id="add-book" style="margin-left: 5px; margin-top: 5px"><img src="/static/assets/add.png" style="width: 2vw; height: 2vw"> Add Book</button>
+  		</div>
+  		<hr style="background-color: white">
+  		<div>
+		<ul id="all-books">
+  			{% for book in books %}
+  			<div style="display: inline-flex">
+			<li><a class="other" href="{{ book.href }}" target="_blank">{{ book.name }}</a></li>
+			<button id="{{ book._id }}" class="btn btn-danger" style="margin-left: 5px"><img src="/static/assets/bin-2.png" style="width: 20%; height: auto">Remove Link</button>
+			<hr style="background-color: white">
+			</div>
+			<hr>
+  			{% endfor %}
+		<div id="book-form" style="display: none;">
+            	<label style="color: white; margin-right: 5px">Name</label>
+            	<input id="book-name-name" type="text" name="name" style="margin-right: 5px">
+            	<label style="color: white; margin-right: 5px">Link</label>
+            	<input id="book-link-name" type="text" name="link" style="margin-right: 5px">
+	    	<button id="book-add" class="btn btn-success" style="margin-right: 5px">Add</button>
+	   	<button id="book-cancel" class="btn btn-danger">Cancel</button>
+        	</div>
+  		</ul>
+		</div>
+  	</div>
+  	<div id="videos">
+  		<div id="video-header" style="display: inline-flex;">
+  			<h1 style="color: white">Videos</h1>
+  		<button class="btn btn-success" id="add-video" style="margin-left: 5px; margin-top: 5px"><img src="/static/assets/add.png" style="width: 2vw; height: 2vw"> Add Video</button>
+  		</div>
+  		<hr style="background-color: white">
+  		<div>
+		<ul id="all-videos">
+  			{% for video in videos %}
+  			<div style="display: inline-flex">
+			<li><a class="other" href="{{ video.href }}" target="_blank">{{ video.name }}</a></li>
+			<button id="{{ video._id }}" class="btn btn-danger" style="margin-left: 5px"><img src="/static/assets/bin-2.png" style="width: 20%; height: auto">Remove Link</button>
+			<hr style="background-color: white">
+			</div>
+			<hr>
+  			{% endfor %}
+		 <div id="video-form" style="display: none;">
+            <label style="color: white; margin-right: 5px">Name</label>
+            <input id="video-name-name" type="text" name="name" style="margin-right: 5px">
+            <label style="color: white; margin-right: 5px">Link</label>
+            <input id="video-link-name" type="text" name="link" style="margin-right: 5px">
+	    <button id="video-add" class="btn btn-success" style="margin-right: 5px">Add</button>
+	   <button id="video-cancel" class="btn btn-danger">Cancel</button>
+        </div>
+  		</ul>
+		</div>
+  	</div>
+  	<div id="other">
+  		<div id="other-header" style="display: inline-flex;">
+  			<h1 style="color: white">Other</h1>
+  		<button class="btn btn-success" id="add-other" style="margin-left: 5px; margin-top: 5px"><img src="/static/assets/add.png" style="width: 2vw; height: 2vw"> Add</button>
+  		</div>
+  		<hr style="background-color: white">
+  		<div>
+			<ul id="all-others">
+  			{% for other in others %}
+  			<div style="display: inline-flex">
+			<li><a class="other" href="{{ other.href }}" target="_blank">{{ other.name }}</a></li>
+			<button id="{{ other._id }}" class="btn btn-danger" style="margin-left: 5px"><img src="/static/assets/bin-2.png" style="width: 20%; height: auto">Remove Link</button>
+			<hr style="background-color: white">
+			</div>
+			<hr>
+  			{% endfor %}
+		</div>
+        <div id="other-form" style="display: none;">
+            <label style="color: white; margin-right: 5px">Name</label>
+            <input id="other-name-name" type="text" name="name" style="margin-right: 5px">
+            <label style="color: white; margin-right: 5px">Link</label>
+            <input id="other-link-name" type="text" name="link" style="margin-right: 5px">
+	    <button id="other-add" class="btn btn-success" style="margin-right: 5px">Add</button>
+	   <button id="other-cancel" class="btn btn-danger">Cancel</button>
+        </div>
+  		</ul>
+		
+  	</div>
+  	</div>
+  </div>
+</div>
+{% endblock %}

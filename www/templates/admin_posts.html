@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block content %}
+<script type="text/python">
+	from browser import document, window, aio, ajax
+
+	document['content'].textContent.strip()
+
+	def on_complete(req):
+		img = eval(req.responseText)
+		try:
+			for keys in img['imgs']: 
+				print(img['imgs'])
+				adder("https://kcbootcampers-api-heroku.herokuapp.com/"+img['imgs'][keys][1:], keys)
+		except KeyError:
+			pass
+		
+	uri = window.location.href[window.location.href.find('post') + len('post'):]
+	req = ajax.ajax()
+	req.bind('complete', on_complete)
+	req.open('GET','https://kcbootcampers-api-heroku.herokuapp.com/posts/get/images'+uri, True)
+	req.set_header('content-type', 'application/x-form')
+	req.send()
+
+	def remover(ev):
+		endpoint = window.location.href[window.location.href.find('post') + len('post'):]
+		url = "https://kcbootcampers-api-heroku.herokuapp.com/admin/posts/remove" + endpoint
+		req = aio.get(url)
+		req.send()
+		uri = window.location.href[window.location.href.find('admin') + len('admin/'):window.location.href.find('/post')]
+		window.location.href = "https://kcbootcampers-api-heroku.herokuapp.com/admin/hub/" + uri
+
+
+
+	def transform(ev):
+		document['post-wrap'].style.display = "none"
+		document['form-wrap'].style.display = "block"
+		document['textarea'].value = document['content'].textContent
+
+	
+	def adder(src, id):	
+		non_image_files = ['txt', 'pdf', 'c', 'docx']
+		if src != "":
+			div = document.createElement('div')
+			div.setAttribute("id", id)
+			div.setAttribute("style", "background: none; border: none; width: 18rem; margin-right: 10px")
+			div.set_class_name("card")
+			a = document.createElement('a')
+			a.setAttribute("href", src)
+			a.setAttribute("target", "_blank")
+			img = document.createElement('img')
+			img.set_class_name("card-img-top")
+			if src.split('.')[-1] in non_image_files:
+				index = non_image_files.index(src.split('.')[-1])
+				src_list = src.split('/')
+				src_list[-1] = non_image_files[index]+".png"
+				src = '/'.join(src_list)
+				img.setAttribute("style", "width: 10vw; height: 10vw")
+				img.setAttribute("alt", id+"."+non_image_files[index])
+				img.setAttribute("title", id+"."+non_image_files[index])
+			else:
+				src = src
+				img.setAttribute("style", "width: 100%; height: 100%")
+			img.setAttribute("src", src)
+			a <= img
+			div <= a
+			document['images'].style.display = "inline-flex"
+			document['images'] <= div
+	
+	document['footer'].style.color = "white"
+	document['body'].style.backgroundColor = "#343a40"
+	document['remove-button'].bind("click", remover)
+	document['edit-button'].bind("click", transform)
+</script>
+{{ moment.include_jquery() }}
+{{ moment.include_moment() }}
+<div id="post-wrap" style="padding-left: 3vw; padding-right: 3vw;">
+	<div id="row" style="width: 100%; display: inline-flex; margin-top: 5px">
+		<div id="column1" style="width: 50%"><button class="btn btn-danger" id="remove-button"><img src="/static/assets/bin-2.png" style="height: 2vw; width: 2vw"> Remove</button></div>
+		<div id="column2" style="width: 50%;"><button id="edit-button" class="btn btn-primary" style="float: right;"><img src="/static/assets/pencil-2.png" style="width: 2vw; height: 2vw"> Edit</button></div>
+	</div>
+	<div id="header" style="width: 100%">
+		<center><h1 style="color: white;">{{ post.title }}</h1></center>
+	</div>
+	<hr style="background-color: white">
+<pre id="content" style="color: white; word-break: break-word;">
+{{ post.content }}
+	<div id="images" style="display: none; height: 40%; width: 45%; flex-wrap: wrap;">
+		
+	</div>
+	</pre>
+	<hr style="background-color: white">
+	<p style="color: white">Author: {{ post.author }}</p>
+	<p style="color: white">Posted: {{ moment(post.date_created).fromNow(refresh=True) }}</p>
+</div>
+<div id="form-wrap" style="padding-left: 10vw; padding-right: 10vw; display: none;">
+	<form method="post">
+  <div class="form-group">
+    <center><label for="exampleFormControlInput1" style="color: white">Title</label></center>
+    <center><input type="text" class="form-control" id="exampleFormControlInput1" style="width: 60%" name="title" value="{{ post.title }}" autocomplete="off" required></center>
+  </div>
+  <div class="form-group">
+    <center><label for="exampleFormControlTextarea1" style="color: white">Content</label></center>
+    <textarea id="textarea" class="form-control" id="exampleFormControlTextarea1" name="content" rows="15" required></textarea>
+  </div>
+  <button class="btn btn-success" type="submit">Post</button>
+</form>
+</div>
+{% endblock %}

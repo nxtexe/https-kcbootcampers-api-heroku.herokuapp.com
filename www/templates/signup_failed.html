@@ -1,0 +1,85 @@
+{% extends "base.html"%}
+{% block content %}
+<script type="text/python">
+	from browser import document, ajax
+
+
+	def on_complete(req):
+		document['posts'].style.display = "none"
+		document['test'].style.display = "block"
+		document['test'].textContent = ""
+		my_dict = eval(req.responseText.replace('null', 'None'))
+		my_list = [v for v in my_dict.values()]
+		for elements in my_list:
+			div = document.createElement('div')
+			div.setAttribute("id", elements['_id'] + "div")
+			div.setAttribute("style", "padding-left: 5px")
+			h1 = document.createElement('h1')
+			h1.setAttribute("id", elements['_id'] + "title")
+			h1.setAttribute("style", "padding-right: 5px")
+			h1 <= elements['title']
+			headerdiv = document.createElement('div')
+			headerdiv.setAttribute('style', "display: inline-flex;")
+			removebtn = document.createElement('button')
+			removebtn.setAttribute("class", "btn btn-danger")
+			removebtn.setAttribute("style", "float: right")
+			removebtn.setAttribute("id", elements['_id'])
+			binimg = document.createElement('img')
+			binimg.setAttribute("src", "/static/assets/bin-2.png")
+			binimg.setAttribute("style", "width: 2vw; height: 2vw")
+			removebtn <= binimg
+			removebtn <= "Remove"
+			headerdiv <= h1
+			headerdiv <= removebtn
+			authorp = document.createElement('p')
+			authorp.setAttribute("id", elements['_id'] + "author")
+			authorp <= elements['author']
+			contentp = document.createElement('p')
+			contentp.setAttribute("id", elements['_id'] + "content")
+			datep = document.createElement('p')
+			datep <= f"Date Creadted: {elements['formatted']}" 
+			a = document.createElement('a')
+			a.setAttribute("href", "/posts/"+elements['_id'])
+			a <= "Read More"
+			contentp <= f"{elements['short_form']} ... "
+			contentp <= a
+			i = document.createElement('i')
+			i.setAttribute("id", elements['_id'] + "date")
+			i <= datep
+			div <= h1
+			div <= authorp
+			div <= i
+			div <= contentp
+			document['test'] <= div
+			document['test'] <= document.createElement('hr')
+
+	
+	def replacer(ev):
+		if document['text'].value == "":
+			document['posts'].style.display = "block"
+			document['test'].style.display = "none"
+		
+			
+
+	def printer(ev):
+		if document['text'].value != "":
+			req = ajax.ajax()
+			req.bind('complete', on_complete)
+			req.open('POST', 'https://kcbootcampers-api-heroku.herokuapp.com/search/posts', True)
+			req.set_header('content-type','application/x-www-form-urlencoded')
+			req.send({'data': document['text'].value})
+
+	
+	document['text'].bind('keyup', replacer)
+	document['text'].bind('keypress', printer)
+</script>
+<form>
+	<input type="text" name="text" id="text" autocomplete="off">
+</form>
+<div id="test"></div>
+<div id="posts">
+<h1>This is a test.</h1>
+<p>But this is not a drill.</p>
+<img src="/static/assets/bin-2.png">
+</div>
+{% endblock %}

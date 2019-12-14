@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<script type="text/python">
+	from browser import document, window
+	import re
+
+	ep = re.compile('[({1,1}][\\d]{3,3}[){1, 1}][0-9]{3,3}[-][0-9]{4,4}')
+
+	if window.location.href == "https://kcbootcampers-api-heroku.herokuapp.com/change_cell#":
+		document['invalid-pattern'].style.display = "block"
+	else:
+		document['invalid-pattern'].style.display = "none"
+
+	def checker(ev):
+		global ep
+		s = document['cell-zone'].value
+		if s == "":
+			document['invalid-pattern'].style.display = "none"
+		else:
+			m = ep.match(s)
+			try:
+				valid = m.group()
+				if valid == s:
+					document['invalid-pattern'].style.display = "none"
+					document['form-zone'].action = ""
+				else:
+					document['invalid-pattern'].style.display = "block"
+					document['form-zone'].action = "#"
+			except AttributeError:
+				document['invalid-pattern'].style.display = "block"
+				document['form-zone'].action = "#"
+
+	if window.innerWidth < 1200:
+		document['form-zone'].style.width = "100vw"
+		document['form-zone'].style.paddingLeft = "0"
+	else:
+		document['form-zone'].style.paddingLeft = "1vw"
+		document['form-zone'].style.width = "35vw"
+
+	document['submit-button'].bind("click", checker)
+</script>
+<h5 style="padding-left: 1vw; padding-top: 1vh">
+</h5>
+<button id="invalid-pattern" type="button" class="btn btn-danger" style="width: 100%; display: block;">Invalid </button>
+<form id="form-zone" class="form-group" method="post" style="width: 35vw; padding-left: 1vw; padding-top: 2vh;">
+      <label for="exampleDropdownFormEmail1">Cellphone</label>
+      <input type="cellphone" class="form-control" id="cell-zone" name="cellphone" placeholder="(111)111-1111" autocomplete="off" required>
+      <button class="btn btn-success" type="submit" id="submit-button">Send</button>
+</form>
+{% endblock %}

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="https://brython.info/src/brython.js"></script>
+	<script src="https://brython.info/src/brython_stdlib.js"></script>
+	<title>Test</title>
+</head>
+<body onload="brython()">
+	<div class="controls">
+    <input class="xhr success" type="button" name="xhr" value="Click to start XHR (success)" />
+</div>
+
+<textarea readonly class="event-log"></textarea>
+<script type="text/python">
+	from browser import bind, document, ajax
+
+
+	xhrButtonSuccess = document.querySelector('.xhr.success')
+	log = document.querySelector('.event-log')
+
+	def handleEvent(e):
+		percent = str((e.loaded/e.total)*100)
+		log.value += f"{e.type}: {e.loaded} bytes transferred. {percent[:5]}% \n"
+
+	def addListeners(xhr):
+		xhr.bind('loadstart', handleEvent)
+		xhr.bind('load', handleEvent)
+		xhr.bind('loadend', handleEvent)
+		xhr.bind('progress', handleEvent)
+		xhr.bind('error', handleEvent)
+		xhr.bind('abort', handleEvent)
+
+
+	def on_complete(req):
+		print(req.responseText)
+
+
+	def runXHR(url):
+		log.value = ' '
+		xhr = ajax.Ajax()
+		xhr.bind("complete", on_complete)
+		addListeners(xhr)
+		xhr.open("POST", url)
+		xhr.set_header('content-type', 'multipart/form-data; boundary=----WebKitFormBoundaryjZVrNyWgBT6s1OuT')
+		xhr.send({'data': document['inputs'].elt.files[0]})
+		return xhr
+
+
+	
+	def btnsuccess(ev):
+		print("Works")
+		runXHR('https://kcbootcampers-api-heroku.herokuapp.com/testee_upload')
+
+	def shower(ev):
+		for elements in document['inputs'].elt.files:
+			print(elements)
+
+	document['file-zone'].bind("change", shower)
+	document['submit'].bind("click", btnsuccess)
+</script>
+<form id="file-zone" method=post enctype=multipart/form-data>
+	<div>
+      <input id="inputs" type=file name=file  style="width: 100vw; height: 75vh;">
+      
+  </div>
+</form>
+<button id="submit" class="btn btn-primary">Submit  </button>
+</body>
+</html>

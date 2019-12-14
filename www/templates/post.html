@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block content %}
+<script type="text/python">
+	from browser import document, window, aio, ajax
+
+	document['content'].textContent.strip()
+	def on_complete(req):
+		img = eval(req.responseText)
+		try:
+			for keys in img['imgs']: 
+				print(img['imgs'])
+				adder("https://kcbootcampers-api-heroku.herokuapp.com/"+img['imgs'][keys][1:], keys)
+		except KeyError:
+			pass
+		
+	uri = window.location.href[window.location.href.find('posts') + len('posts'):]
+	req = ajax.ajax()
+	req.bind('complete', on_complete)
+	req.open('GET','https://kcbootcampers-api-heroku.herokuapp.com/posts/get/images'+uri, True)
+	req.set_header('content-type', 'application/x-form')
+	req.send()
+
+
+
+	def adder(src, id):	
+		non_image_files = ['txt', 'pdf', 'c', 'docx']
+		if src != "":
+			div = document.createElement('div')
+			div.setAttribute("id", id)
+			div.setAttribute("style", "background: none; border: none; width: 18rem; margin-right: 10px")
+			div.set_class_name("card")
+			a = document.createElement('a')
+			a.setAttribute("href", src)
+			a.setAttribute("target", "_blank")
+			img = document.createElement('img')
+			img.set_class_name("card-img-top")
+			if src.split('.')[-1] in non_image_files:
+				index = non_image_files.index(src.split('.')[-1])
+				src_list = src.split('/')
+				src_list[-1] = non_image_files[index]+".png"
+				src = '/'.join(src_list)
+				img.setAttribute("style", "width: 10vw; height: 10vw")
+				img.setAttribute("alt", id+"."+non_image_files[index])
+				img.setAttribute("title", id+"."+non_image_files[index])
+			else:
+				src = src
+				img.setAttribute("style", "width: 100%; height: 100%")
+			img.setAttribute("src", src)
+			a <= img
+			div <= a
+			document['images'].style.display = "inline-flex"
+			document['images'] <= div
+</script>
+{{ moment.include_jquery() }}
+{{ moment.include_moment() }}
+<div id="content-wrap" style="padding-left: 3vw; padding-right: 3vw">
+	<center><h1>{{ post.title }}</h1></center>
+	<hr>
+<pre id="content" style="word-break: break-word;">
+{{ post.content }}
+	<div id="images" style="display: none; width: 45%; height: 40%; flex-wrap: wrap;">
+		
+	</div>
+	</pre>
+	<hr>
+	<p>Author: {{ post.author }}</p>
+	<p>Posted: {{ moment(post.date_created).fromNow(refresh=True) }}</p>
+</div>
+{% endblock %}

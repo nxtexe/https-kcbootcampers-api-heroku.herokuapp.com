@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block content %}
+<!--
+	pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2, 3}$"
+-->
+<script type="text/python">
+	from browser import ajax, document, aio, local_storage, window
+
+	
+	url = "https://kcbootcampers-api-heroku.herokuapp.com/register"
+	url2 = "https://kcbootcampers-api-heroku.herokuapp.com/auth/register"
+
+	local_storage.storage['tries'] = "0"
+	local_storage.storage['remember_me'] = "on"
+
+	if window.innerWidth < 500:
+		document['form-zone'].style.marginLeft = "0"
+		document['form-zone'].style.width = "100vw"
+		document['invalid'].style.width = "100vw"
+		document['invalid'].style.left = ""
+	else:
+		document['form-zone'].style.width = "35vw"
+		document['form-zone'].style.marginLeft = "32vw"
+		document['invalid'].style.width = "50vw"
+		document['invalid'].style.left = "23%"
+
+
+	document['center'].style.display = "none"
+	document['former'].style.display = "block"
+
+	
+	
+
+	#turn remember me checkbox on or off
+	def checker(ev):
+		if local_storage.storage['remember_me'] == "on":
+			local_storage.storage['remember_me'] = "off"
+		else:
+			local_storage.storage['remember_me'] = "on"
+
+		print(local_storage.storage['remember_me'])
+
+
+	def main(ev):
+		try:
+			tries = int(local_storage.storage['sign_tries'])
+		except KeyError:
+			tries = 0
+		finally:
+			email = document["email-zone"].value
+			local_storage.storage['email'] = email
+			password = document["password-zone"].value
+			re_enter = document['re-enter-zone'].value
+			if re_enter != password:
+				document['not-equal'].style.display = "block"
+				pw_valid = False
+			else:
+				pw_valid = True
+				document['not-equal'].style.display = "none"
+			remember = local_storage.storage['remember_me']
+			local_storage.storage['sign_tries'] = str((tries + 1))
+		return pw_valid
+
+
+	
+	async def listen():
+		try:
+			if int(local_storage.storage['sign_tries']) > 0:
+				document["invalid"].style.display = "block"
+				#print(f"req.status= {req.status}, tries= {local_storage.storage['sign_tries']}")
+		except KeyError:
+			pass
+
+
+	aio.run(listen())
+	document["former"].bind("onsubmit", main)
+	document['remember'].bind("click", checker)
+</script>
+<center><h1>Sign Up</h1></center>
+<hr>
+<button id="invalid" type="button" class="btn btn-danger" style="width: 50vw; position: absolute; left: 23vw; display: {{ display }}">Email Already In Use! </button>
+<br>
+<div style="width: 35vw; margin-left: 32vw;" id="form-zone">
+	<center id="center"><img style="height: 50%; width: 50%" src="/static/assets/loading.gif"></center>
+  <form class="px-4 py-3" method="post" id="former" style="display: none">
+    <div class="form-group">
+      <button id="invalid-pattern" type="button" class="btn btn-danger" style="width: 100%; display: none;">Invalid </button>
+      <label for="exampleDropdownFormEmail1">First Name</label>
+      <input type="text" class="form-control" id="fname-zone" name="fname-zone" autocomplete="off" placeholder="John" required>
+    </div>
+    <div class="form-group">
+    <label for="exampleDropdownFormEmail1">Last Name</label>
+      <input type="text" class="form-control" id="lname-zone" name="lname-zone" autocomplete="off" placeholder="Doe" required>
+    </div>
+    <div class="form-group">
+      <label for="exampleDropdownFormEmail1">Email address</label>
+      <input type="email" class="form-control" id="email-zone" name="email-zone" placeholder="email@example.com" autocomplete="off" required pattern="[a-zA-Z]+[\w]*[.\w]*[@{1, 1}][\w]+[.a-zA-Z]+">
+    </div>
+    <div class="form-group">
+      <label for="exampleDropdownFormPassword1">Password</label>
+      <input type="password" class="form-control" id="password-zone" name="password-zone" placeholder="Password" autocomplete="off" required>
+    </div>
+    	<button id="invalid-number" type="button" class="btn btn-danger" style="width: 100%; display: none;">Password Does Not Match </button>
+      <div class="form-group">
+      <label for="exampleDropdownFormPassword1">Re-Enter Password</label>
+      <input type="password" class="form-control" id="re-enter-zone" name="re-enter-zone" placeholder="Password" autocomplete="off" required>
+    </div>
+    <button id="not-equal" type="button" class="btn btn-danger" style="width: 100%; display: none;">Phone Number Invalid </button>
+    <div class="form-group">
+      <label for="exampleDropdownFormPassword1">Cellphone</label>
+      <input type="tel" class="form-control" id="cell-zone" name="cell-zone" placeholder="(111)111-1111" autocomplete="off" pattern="[(][0-9]{3}[)][0-9]{3}-[0-9]{4}" required>
+      Example: (111)111-1111
+    </div>
+    <div class="form-group">
+      <div class="form-check">
+        <input type="checkbox" class="form-check-input" id="remember" name="remember" checked>
+        <label class="form-check-label" for="dropdownCheck">
+          Remember me
+        </label>
+      </div>
+    </div>
+    <button type="submit" id="submit-button" class="btn btn-primary">Sign Up</button>
+  </form>
+  <div class="dropdown-divider"></div>
+  <center><div id="other-navs" style="display: inline-block; padding-bottom: 4vh; text-align: center;">
+ Already have an account? <a href="/login">Log in</a>
+ </div></center>
+</div>
+{% endblock %}

@@ -1,0 +1,372 @@
+{% extends "base.html" %}
+{% block content %}
+<script type="text/python">
+	from browser import document, ajax, window
+
+	url = "https://kcbootcampers-api-heroku.herokuapp.com/upload"
+
+	if window.innerWidth < 500:
+		document['assignment-search-icon'].style.width = "10vw"
+		document['assignment-search-icon'].style.height = "10vw"
+		document['search-icon'].style.width = "10vw"
+		document['search-icon'].style.height = "10vw"
+	else:
+		document['assignment-search-icon'].style.width = "4vw"
+		document['assignment-search-icon'].style.height = "4vw"
+		document['search-icon'].style.width = "4vw"
+		document['search-icon'].style.height = "4vw"
+
+	def on_complete_cookie(req):
+		if req.responseText == "Success":
+			print(req.responseText)
+
+
+	def send_cookie_req(ev):
+		if ev.target.textContent.strip() == "Submit":
+			uri = ev.target.id
+			req = ajax.ajax()
+			req.bind('complete', on_complete_cookie)
+			req.open('GET','https://kcbootcampers-api-heroku.herokuapp.com/assignments/set_cookie/'+uri, True)
+			req.set_header('content-type', 'application/x-form')
+			req.send()
+
+
+	def on_complete(req):
+		document['all-posts'].style.display = "none"
+		document['test'].style.display = "block"
+		document['test'].textContent = ""
+		my_dict = eval(req.responseText.replace('null', 'None'))
+		my_list = [v for v in my_dict.values()]
+		for elements in my_list:
+			div = document.createElement('div')
+			div.setAttribute("id", elements['_id'] + "div")
+			div.setAttribute("style", "padding-left: 5px")
+			h1 = document.createElement('h1')
+			h1.setAttribute("id", elements['_id'] + "title")
+			h1.setAttribute("style", "padding-right: 5px")
+			h1 <= elements['title']
+			headerdiv = document.createElement('div')
+			headerdiv.setAttribute('style', "display: inline-flex;")
+			removebtn = document.createElement('button')
+			removebtn.setAttribute("class", "btn btn-danger")
+			removebtn.setAttribute("style", "float: right")
+			removebtn.setAttribute("id", elements['_id'])
+			binimg = document.createElement('img')
+			binimg.setAttribute("src", "/static/assets/bin-2.png")
+			binimg.setAttribute("style", "width: 2vw; height: 2vw")
+			removebtn <= binimg
+			removebtn <= "Remove"
+			headerdiv <= h1
+			headerdiv <= removebtn
+			authorp = document.createElement('p')
+			authorp.setAttribute("id", elements['_id'] + "author")
+			authorp <= f"Author: {elements['author']}"
+			contentp = document.createElement('p')
+			contentp.setAttribute("id", elements['_id'] + "content")
+			datep = document.createElement('p')
+			datep <= "Posted: "
+			a = document.createElement('a')
+			a.setAttribute("href", "/posts/"+elements['_id'])
+			a <= "Read More"
+			contentp <= f"{elements['short_form']} .... "
+			contentp <= a
+			i = document.createElement('i')
+			i.setAttribute("id", elements['_id'] + "date")
+			try:
+				utctime = window.Date.new(elements['date_created'].split('.')[0]+"Z")
+			except IndexError:
+				utctime = window.Date.new(elements['date_created']+"Z")
+			datep <= window.moment.utc(utctime).fromNow()
+			i <= datep
+			div <= h1
+			div <= authorp
+			div <= i
+			div <= contentp
+			document['test'] <= div
+			document['test'] <= document.createElement('hr')
+
+
+	def assignment_on_complete(req):
+		document['all-assignments'].style.display = "none"
+		document['assignments-test'].style.display = "block"
+		document['assignments-test'].textContent = ""
+		my_dict = eval(req.responseText.replace('null', 'None'))
+		my_list = [v for v in my_dict.values()]
+		for elements in my_list:
+			div = document.createElement('div')
+			div.setAttribute("id", elements['_id'] + "div")
+			div.setAttribute("style", "padding-left: 5px")
+			h1 = document.createElement('h1')
+			h1.setAttribute("id", elements['_id'] + "title")
+			h1.setAttribute("style", "padding-right: 5px")
+			h1 <= elements['title']
+			headerdiv = document.createElement('div')
+			headerdiv.setAttribute('style', "display: inline-flex;")
+			submitbtn = document.createElement('button')
+			submitbtn.setAttribute("class", "btn btn-success")
+			submitbtn.setAttribute("id", elements['_id'])
+			submitbtn.setAttribute("data-toggle", "modal")
+			submitbtn.setAttribute("data-target", "#exampleModalLong")
+			submitbtn.setAttribute("type", "button")
+			submitbtn <= "Submit"
+			binimg = document.createElement('img')
+			binimg.setAttribute("src", "/static/assets/bin-2.png")
+			binimg.setAttribute("style", "width: 2vw; height: 2vw")
+			headerdiv <= h1
+			authorp = document.createElement('p')
+			authorp.setAttribute("id", elements['_id'] + "author")
+			authorp <= f"Author: {elements['author']}"
+			contentp = document.createElement('p')
+			contentp.setAttribute("id", elements['_id'] + "content")
+			datep = document.createElement('p')
+			datep <= "Posted: "
+			date_duep = document.createElement('p')
+			try:
+				utc_date_due = window.Date.new(elements['date_due'].split('.')[0]+"Z")
+			except IndexError:
+				utc_date_due = window.Date.new(elements['date_due']+"Z")
+			date_duep <= f"Date Due: {window.moment.utc(utc_date_due).format('LLL')}"
+			a = document.createElement('a')
+			a.setAttribute("href", "/assignments/"+elements['_id'])
+			a <= "Read More"
+			contentp <= f"{elements['short_form']} .... "
+			contentp <= a
+			i = document.createElement('i')
+			i.setAttribute("id", elements['_id'] + "date")
+			try:
+				utctime = window.Date.new(elements['date_created'].split('.')[0]+"Z")
+			except IndexError:
+				utctime = window.Date.new(elements['date_created']+"Z")
+			datep <= window.moment.utc(utctime).fromNow()
+			i <= datep
+			i2 = document.createElement('i')
+			i2.setAttribute("id", elements['_id'] + "date_due")
+			i2.setAttribute("style", "display: inline-flex; padding-right: 5px")
+			i2 <= date_duep
+			div <= h1
+			div <= authorp
+			div <= i
+			div <= contentp
+			div <= i2
+			div <= submitbtn
+			document['assignments-test'] <= div
+			document['assignments-test'] <= document.createElement('hr')
+
+	
+	def replacer(ev=None):
+		if document['text'].value == "":
+			document['all-posts'].style.display = "block"
+			document['test'].style.display = "none"
+
+
+	def assignment_replacer(ev=None):
+		if document['assignment-text'].value == "":
+			document['all-assignments'].style.display = "block"
+			document['assignments-test'].style.display = "none"
+		
+			
+
+	def printer(ev):
+		if document['text'].value != "":
+			req = ajax.ajax()
+			req.bind('complete', on_complete)
+			req.open('POST', 'https://kcbootcampers-api-heroku.herokuapp.com/search/posts', True)
+			req.set_header('content-type','application/x-www-form-urlencoded')
+			req.send({'data': document['text'].value})
+
+
+	def assignment_printer(ev):
+		if document['assignment-text'].value != "":
+			req = ajax.ajax()
+			req.bind('complete', assignment_on_complete)
+			req.open('POST', 'https://kcbootcampers-api-heroku.herokuapp.com/search/assignments', True)
+			req.set_header('content-type','application/x-www-form-urlencoded')
+			req.send({'data': document['assignment-text'].value})
+	
+
+    	document['footer'].style.display = "none"
+
+	def main2(ev):
+		ev.preventDefault()
+		change('assignment-text', 'all-assignments', 'assignments-test')
+
+	def main(ev):
+		ev.preventDefault()
+		change('text', 'all-posts', 'test')
+
+	booling = False
+	def change(id, id2, id3):
+      		global booling
+      		if not booling:
+        		document[id].style.width = "100%"
+        		document[id].style.opacity = "1"
+        		document[id].disabled = booling
+        		booling =   True
+      		else:
+        		document[id].style.width = "0%"
+       			document[id].style.opacity = "0"
+        		document[id].disabled = booling
+			document[id2].style.display = "block"
+			document[id3].style.display = "none"
+        		booling = False
+
+
+	window.bind("click", send_cookie_req)
+	document['text'].bind('keyup', replacer)
+	document['text'].bind('keypress', printer)
+	document['search-icon'].bind("click", main)
+	document['assignment-text'].bind("keyup", assignment_replacer)
+	document['assignment-text'].bind("keypress", assignment_printer)
+	document['assignment-search-icon'].bind("click", main2)
+</script>
+{{ moment.include_jquery() }}
+{{ moment.include_moment() }}
+	<!-- Modal -->
+<div class="modal fade" id="exampleModalLong" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLongTitle">Upload New File</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+       	<iframe src="https://kcbootcampers-api-heroku.herokuapp.com/modal_upload" style="height: 30vh; width: 100%;"></iframe>
+  </div>
+    </div>
+  </div>
+</div>
+	<ul class="nav nav-tabs" id="myTab" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active" id="posts-tab" data-toggle="tab" href="#posts" role="tab" aria-controls="posts" aria-selected="true">Posts</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="assignments-tab" data-toggle="tab" href="#assignments" role="tab" aria-controls="assignments" aria-selected="false">Assignments</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="resources-tab" data-toggle="tab" href="#resources" role="tab" aria-controls="resources" aria-selected="false">Resources</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">My Profile</a>
+  </li>
+</ul>
+<div class="tab-content" id="myTabContent">
+    <div class="tab-pane fade show active" id="posts" role="tabpanel" aria-labelledby="posts-tab">
+      <div class="fixed-bottom" id="search-barz" style="text-align: right; padding-right: 5vw">
+  <div style="display: inline-block; margin-bottom: 4vh">
+  <img src="../static/assets/search.png" id="search-icon" style="width: 4vw; height: 4vw; float: right;">
+  <form id="demo-2" class="px-4 py-3" style="float: left; direction: rtl;">
+  <input type="search" placeholder="Search" class="form-control" id="text" style="direction: ltr; opacity: 0;width: 0%; transition: all 1.5s" autocomplete="off">
+  </form>
+  </div>
+</div>
+    <div id="test"></div>
+    <div id="all-posts">
+	{% for post in posts %}
+  		<div id="{{ post._id }}" style="padding-left: 5px">
+  			<h1>{{ post.title }}</h1>
+        <p>Author: {{ post.author }}</p>
+  			<i><p>Posted: {{ moment(post.date_created).fromNow(refresh=True) }}</p></i>
+  			<p>{{ post.short_form }}
+  				.... <a href="/posts/{{ post._id }}">Read More</a></p>
+  		</div>
+  		<hr>
+      {% endfor %}
+    </div>
+  	</div>
+  	<div class="tab-pane fade" id="assignments" role="tabpanel" aria-labelledby="assignments-tab">
+      <div class="fixed-bottom" id="search-barz" style="text-align: right; padding-right: 5vw">
+  <div style="display: inline-block; margin-bottom: 4vh">
+  <img src="../static/assets/search.png" id="assignment-search-icon" style="width: 4vw; height: 4vw; float: right;">
+  <form id="demo-3" class="px-4 py-3" style="float: left; direction: rtl;">
+  <input type="search" placeholder="Search" class="form-control" id="assignment-text" style="direction: ltr; opacity: 0;width: 0%; transition: all 1.5s" autocomplete="off">
+  </form>
+  </div>
+</div>
+	<div id="assignments-test" style="display: none"></div>
+  	<div id="all-assignments">
+	    {% for assignment in assignments %}
+          <div id="assignment-{{ assignment._id }}" style="padding-left: 5px">
+          <div id="header" style="display: inline-flex;">
+          <h1>{{ assignment.title }}</h1>
+          <img src="../static/assets/Tick-Mark-Dark.png" style="height: 4vw; width: 4vw;">
+        </div>
+        <p>Author: {{ assignment.author }}</p>
+        <p><i style="display: block">Posted: {{ moment(assignment.date_created).fromNow(refresh=True) }}</i></p>
+        <p>{{ assignment.short_form }}
+          .... <a href="/assignment/{{ assignment._id }}">Read More</a></p>
+        <i style="flex: inherit;">Date Due: {{ moment(assignment.date_due).format('LLL') }}   </i>
+        <button type="button" id="{{ assignment._id }}" class="btn btn-success" data-toggle="modal" data-target="#exampleModalLong">
+    Submit
+  </button>
+      </div>
+      <hr>
+      {% endfor %}
+	</div>
+  	</div>
+  	<div class="tab-pane fade" id="resources" role="tabpanel" aria-labelledby="resources-tab">
+  		<div id="book-links">
+  			<h1>Books</h1>
+  		<ul style="display: block; list-style: none">
+  				{% for book in books %}
+  				<li>
+  					<a href="{{ book.href }}">{{ book.name }}</a>
+  				</li>
+  				{% endfor %}
+  			</ul>
+  		</div>
+  		<div id="video-links">
+  			<h1>Videos</h1>
+  			<ul style="display: block; list-style: none">
+  				{% for video in videos %}
+  				<li>
+  					<a href="{{ video.href }}">{{ video.name }}</a>
+  				</li>
+  				{% endfor %}
+  			</ul>
+  		</div>
+  		<div id="other-links">
+  			<h1>Other</h1>
+  			<ul style="display: block; list-style: none">
+  				{% for other in others %}
+  				<li>
+  					<a href="{{ other.href }}">{{ other.name }} </a>
+  				</li>
+  				{% endfor %}
+  			</ul>
+  		</div>
+  	</div>
+  	<div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+      <div id="credentials-wrap" style="padding-left: 3vw; padding-right: 3vw; padding-top: 2vw">
+        <p style="text-align: center;">
+        Name: {{ fname }} {{ lname }}
+      </p>
+      <hr>
+      <p style="text-align: center;">
+      Email: {{ acc }}  
+      </p>
+      <hr>
+      <div>
+        <p style="text-align: center;">
+          Password: {{ password }}
+          <a href="/change_password"><button type="button" class="btn btn-success">Change</button></a>
+        </p>
+      </div>
+     <hr>
+      <div>
+        <p style="text-align: center;">
+          Cellphone Number: {{ cellphone }}
+          <a href="/change_cell"><button type="button" class="btn btn-success">Change</button></a>
+        </p>
+      </div>
+      </div>
+  	</div>
+</div>
+</div>
+  <footer id="footer2">
+    <center>
+      <h6>Copyright &copy; 2019 Designed by Nathan Johnson. Contact: nahtanjohn1l@gmail.com</h6>
+    </center>
+  </footer>
+{% endblock %}

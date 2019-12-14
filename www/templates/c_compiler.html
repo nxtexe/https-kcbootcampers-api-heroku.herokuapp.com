@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<script type="text/python">
+	from browser import local_storage
+	
+	
+  	local_storage.storage['tries'] = "0"
+    	local_storage.storage['sign_tries'] = "0"
+
+</script>
+<div class="page-container">
+	<iframe src="https://spide.onlinegdb.com/" height="600" width="100%"></iframe>
+</div>
+{% endblock %}

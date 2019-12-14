@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<!--Bootstrap dependencies begin-->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+	<!-- end -->
+	<!-- brython scripts begin -->
+	<script src="https://brython.info/src/brython.js"></script>
+	<script src="https://brython.info/src/brython_stdlib.js"></script>
+	<!--brython scripts end -->
+	<title>Computer Science</title>
+</head>
+
+<body onload="brython()" style="max-width: 100%; overflow-x: hidden;">
+<script type="text/python">
+	from browser import local_storage, document, window
+
+	document['spinner'].style.display = "none"
+
+	try:
+		if window.orientation is not None:
+			document['form-container'].style.backgroundImage = "url('')"
+		else:
+			document['form-container'].style.backgroundImage = "url('/static/assets/drop_here.png')"
+	except AttributeError:
+		document['form-container'].style.backgroundImage = "url('/static/assets/drop_here.png')"
+
+
+	def fate_shower(ev):
+		document['fate'].style.display = "none"
+
+	def shower(ev):
+		if document['spinner'].style.display == "none":
+			document['spinner'].style.display = "block"
+		else:
+			document['spinner'].style.display = "none"
+
+	if window.window.innerHeight > (1200*0.3):
+		document['head'].style.display = "block"
+	else:
+		document['head'].style.display = "none"
+
+  	local_storage.storage['tries'] = "0"
+    	local_storage.storage['sign_tries'] = "0"
+	document['submit'].bind("click", shower)
+	document['file-zone'].bind("click", fate_shower)
+</script>
+	<center><h5 id="head">Drop Files Below</h5></center>
+	<center>
+	<div id="spinner" class="spinner-border" role="status">
+  	<span class="sr-only">Loading...</span>
+	</div>
+	</center>
+  <center><h3 id="fate">{{ fate }}</h3></center>
+  <div id="form-container" style="background-image: url(''); background-size: cover;">
+    <form id="file-zone" method=post enctype=multipart/form-data>
+	<div>
+      <input id="inputs" type=file name=file  style="width: 100vw; height: 75vh;">
+      <button id="submit" type="submit" value="Upload" class="btn btn-primary">Submit  </button>
+	</div>
+    </form>
+  </div>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+<form id="form-zone" class="form-group" method="post" action="/change_password/auth/send" style="width: 35vw; padding-left: 1vw; padding-top: 2vh;">
+      <label for="exampleDropdownFormEmail1">Password</label>
+      <input type="password" class="form-control" id="password-zone" name="password" placeholder="password" autocomplete="off" required>
+      <button class="btn btn-success" type="submit" id="submit-button">Send</button>
+</form>
+{% endblock %}

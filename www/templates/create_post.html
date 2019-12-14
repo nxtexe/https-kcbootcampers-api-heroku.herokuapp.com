@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block content %}
+<script type="text/python">
+	from browser import document, window
+
+	def remover():
+		i = 0
+		while True:
+			try:
+				del document[i]
+				del document[f"image-{i}"]
+        			i += 1
+      			except KeyError:
+        			break
+
+  	def shower(ev):
+    		remover()
+    		files = []
+    		non_image_files = ['txt', 'pdf', 'docx', 'c']
+        	image_files = ['png', 'jpeg', 'jpg', 'gif', 'bmp']
+    		i = 0
+    		for file in ev.target.files:
+      			img = document.createElement("img")
+      			if file.name.split('.')[-1] in non_image_files:
+        			index = non_image_files.index(file.name.split('.')[-1])
+        			src = "/uploads/images/" + non_image_files[index] + ".png"
+        			img.setAttribute("src", src)
+        			img.setAttribute("title", file.name)
+        			img.setAttribute("alt", file.name)
+        			img.setAttribute("style", "width: 100px; height: 100px; border:1px solid white")
+      			elif file.name.split('.')[-1] in image_files:
+        			img.setAttribute("style", "width: 100%; height: auto; border:1px solid white")
+        			img.setAttribute("src", window.URL.createObjectURL(file))
+            		else:
+              			src = "/uploads/images/unknown.png"
+              			img.setAttribute("src", src)
+              			img.setAttribute("title", file.name)
+              			img.setAttribute("alt", file.name)
+              			img.setAttribute("style", "width: 100px; height: 100px; border:1px solid white")
+      			a = document.createElement('a')
+      			a.setAttribute("href", window.URL.createObjectURL(file))
+      			a.setAttribute("target", "_blank")
+      			a.setAttribute("style", "background: none; border: none")
+      			img.setAttribute('id', i)
+      			a <= img
+      			div = document.createElement('div')
+      			div.setAttribute("id", f"image-{i}")
+      			div.setAttribute("style",f"background: none; border: none; width: 18rem; height: {img.style.height}; margin-right: 10px; margin-bottom: 10px")
+      			div.set_class_name("card")
+      			div <= a
+     	 		document['image-preview'] <= div
+     			i += 1
+
+	document['inputs'].bind("change", shower)
+	document['body'].style.backgroundColor = "#343a40"
+  	document['footer'].style.color = "white"
+</script>
+<div id="form-wrap" style="padding-left: 10vw; padding-right: 10vw">
+	<form method="post" enctype=multipart/form-data>
+  <button class="btn btn-success" type="submit" style="margin-top: 10px; float: right">Post</button>
+  <div class="form-group">
+    <center><label for="exampleFormControlInput1" style="color: white">Title</label></center>
+    <center><input type="text" class="form-control" id="exampleFormControlInput1" style="width: 60%" name="title" placeholder="Title" autocomplete="off" required></center>
+  </div>
+  <div class="form-group">
+    <center><label for="exampleFormControlTextarea1" style="color: white">Content</label></center>
+    <textarea class="form-control" id="exampleFormControlTextarea1" name="content" rows="15" required></textarea>
+    <input id="inputs" type="file" name="file" multiple>
+    <div style="display: block">
+    <div id="image-preview" style="display: inline-flex; flex-wrap: wrap; margin-top: 10px">
+      
+    </div>
+    </div>
+  </div>
+</form>
+{% endblock %}

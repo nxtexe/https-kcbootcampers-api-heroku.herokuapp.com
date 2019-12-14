@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block content %}
+<script type="text/python">
+	from browser import document, window, aio, ajax
+
+	document['content'].textContent.strip()
+
+	def on_complete(req):
+		img = eval(req.responseText)
+		try:
+			for keys in img['imgs']: 
+				print(img['imgs'])
+				adder("https://kcbootcampers-api-heroku.herokuapp.com/"+img['imgs'][keys][1:], keys)
+		except KeyError:
+			pass
+		
+	uri = window.location.href[window.location.href.find('assignment') + len('assignment'):]
+	req = ajax.ajax()
+	req.bind('complete', on_complete)
+	req.open('GET','https://kcbootcampers-api-heroku.herokuapp.com/assignments/get/images'+uri, True)
+	req.set_header('content-type', 'application/x-form')
+	req.send()
+
+
+	def on_complete_cookie(req):
+		if req.responseText == "Success":
+			print(req.responseText)
+
+
+	def send_cookie_req(ev):
+		if ev.target.textContent.strip() == "Submit":
+			uri = ev.target.id
+			print(uri)
+			req = ajax.ajax()
+			req.bind('complete', on_complete_cookie)
+			req.open('GET','https://kcbootcampers-api-heroku.herokuapp.com/assignments/set_cookie/'+uri, True)
+			req.set_header('content-type', 'application/x-form')
+			req.send()
+
+
+	def adder(src, id):	
+		non_image_files = ['txt', 'pdf', 'c', 'docx']
+		if src != "":
+			div = document.createElement('div')
+			div.setAttribute("id", id)
+			div.setAttribute("style", "background: none; border: none; width: 18rem; margin-right: 10px")
+			div.set_class_name("card")
+			a = document.createElement('a')
+			a.setAttribute("href", src)
+			a.setAttribute("target", "_blank")
+			img = document.createElement('img')
+			img.set_class_name("card-img-top")
+			if src.split('.')[-1] in non_image_files:
+				index = non_image_files.index(src.split('.')[-1])
+				src_list = src.split('/')
+				src_list[-1] = non_image_files[index]+".png"
+				src = '/'.join(src_list)
+				img.setAttribute("style", "width: 10vw; height: 10vw")
+				img.setAttribute("alt", id+"."+non_image_files[index])
+				img.setAttribute("title", id+"."+non_image_files[index])
+			else:
+				src = src
+				img.setAttribute("style", "width: 100%; height: 100%")
+			img.setAttribute("src", src)
+			a <= img
+			div <= a
+			document['images'].style.display = "inline-flex"
+			document['images'] <= div
+
+	window.bind("click", send_cookie_req)
+	document['content-wrap'].style.paddingLeft = "3vw"
+	document['content-wrap'].style.paddingRight = "3vw"
+</script>
+<!-- Modal -->
+<div class="modal fade" id="exampleModalLong" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLongTitle">Upload New File</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+       	<iframe src="https://kcbootcampers-api-heroku.herokuapp.com/modal_upload" style="height: 30vh; width: 100%;"></iframe>
+  </div>
+    </div>
+  </div>
+</div>
+{{ moment.include_jquery() }}
+{{ moment.include_moment() }}
+	<center><h1 id="assignment-title">{{ assignment.title }}</h1></center>
+	<hr>
+<pre id="content" style="word-break: break-word;">
+{{ assignment.content }}
+		<div id="images" style="display: none; width: 45%; height: 40%; flex-wrap: wrap;">
+		
+	</div>
+	</pre>
+	<hr>
+	<p>Author: {{ assignment.author }}</p>
+	<div id="row" style="width: 100%; display: inline-flex;">
+		<div id="column1" style="width: 50%">
+			<p>Posted: {{ moment(assignment.date_created).fromNow(refresh=True) }}</p>
+		</div>
+		<div id="column2" style="width: 50%; float: right;">
+			<p style="text-align: right;">
+				<i>Date Due: {{ moment(assignment.date_due).format('LLL') }}</i>
+			</p>
+		</div>
+	</div>
+	<center><button id="{{ assignment._id }}" type="button" class="btn btn-success" data-toggle="modal" data-target="#exampleModalLong">
+    Submit
+  </button></center>
+	
+{% endblock %}

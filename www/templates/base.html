@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width" initial-scale=1.0>
+	<link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='assets/favicon.ico') }}" />
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}">
+  <!--Custom Scroll Bar -->
+  <style>
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1; 
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #44037A; 
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #5F00AD; 
+}
+</style>
+ <style>
+         pre {
+            overflow-x: auto;
+            white-space: pre-wrap;
+            white-space: -moz-pre-wrap;
+            white-space: -pre-wrap;
+            white-space: -o-pre-wrap;
+            word-wrap: break-word;
+         }
+      </style>
+	<!--Bootstrap dependencies begin-->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+	<!-- end -->
+	<!-- brython scripts begin -->
+	<script src="https://brython.info/src/brython.js"></script>
+	<script src="https://brython.info/src/brython_stdlib.js"></script>
+	<!--brython scripts end -->
+	<title>Computer Science</title>
+</head>
+<body id="body" onload="brython()" style=" width: 100%; height: 100%; margin: 0px; padding: 0px; overflow-x: hidden;">
+<script type="text/python">
+	from browser import aio, document, window, local_storage
+
+  	if window.location.href == "https://kcbootcampers-api-heroku.herokuapp.com/login" or window.location.href == "https://kcbootcampers-api-heroku.herokuapp.com/register":
+    		pass
+  	else:
+    		local_storage.storage['sign_tries'] = "0"
+    		local_storage.storage['tries'] = "0"
+
+    	if window.innerWidth < 500:
+      		document['nav-brand'].style.width = "20%"
+		document['nav'].style.paddingBottom = "8px"
+		document['nav'].style.paddingTop = "8px"
+    	else:
+      		document['nav-brand'].style.width = "8%"
+		document['nav'].style.paddingBottom = "0"
+		document['nav'].style.paddingTop = "0"
+
+	async def check_login():	
+		if "Account" in document['acc'].textContent:
+			document['log'].textContent = "Log In"
+			document['log'].href = "/login"
+			document['reg'].style.display = "block"
+		else:
+			document['log'].textContent = "Log Out"
+			document['log'].href = "/logout"
+   			document['reg'].style.display = "none"
+
+	aio.run(check_login())
+</script>
+	<div id="page-container">
+	<nav id="nav" class="navbar sticky-top navbar-expand-lg navbar-dark" style="background-color: #5F00AD; padding-top: 0; padding-bottom: 0;">
+  <div id="nav-brand" style="width: 10%; padding-right: 0">
+  <a class="navbar-brand" id="kc-logo"  href="/"><img src="{{ url_for('static', filename='assets/python_logo.png') }}" style="height: 100%; width: 100%"></a>
+</div>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav">
+      <li class="nav-item active">
+        <a class="nav-link" href="https://kcbootcampers-api-heroku.herokuapp.com/#about" id="about-link" style="display: block">About Us </a>
+      </li>
+      <li class="nav-item active">
+        <a class="nav-link" href="https://kcbootcampers-api-heroku.herokuapp.com/#footer" id="signup-link" style="display: block">Contact Us </a>
+      </li>
+      <li class="nav-item active">
+        <a class="nav-link" href="/compiler" id="compiler-link" style="display: block">Compiler </a>
+      </li>
+    </ul>
+    <ul class="navbar-nav ml-auto" style="padding-right: 5em">
+            <li class="nav-item dropdown">
+        <a id="acc" class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <img src="{{ url_for('static', filename='assets/account-user.png') }}" style="width: 3vw; height: 3vw;">
+          {{ acc }}
+        </a>
+        <div class="dropdown-menu " aria-labelledby="navbarDropdownMenuLink">
+          <a id="log" class="dropdown-item" href="/login">Log In</a>
+          <a id="reg" class="dropdown-item" href="/register">Sign Up</a>
+          <a class="dropdown-item " href="/hub">My Account</a>
+	  <a class="dropdown-item" id="admin-link" href="{{ href }}" style="display:{{ display  }}">Dashboard</a>
+        </div>
+  </div>
+</nav>
+<div id="content-wrap" style="height: 100%">
+	{% block content %}
+
+	{% endblock %}
+	</div>
+	<footer id="footer">
+    <center>
+      <h6>Copyright &copy; 2019 Designed by Nathan Johnson. Contact: nahtanjohn1l@gmail.com</h6>
+    </center>
+  </footer>
+	</div>
+<script type="text/python">
+	from browser import document, local_storage, window
+
+	try:
+		if "Account" in document['acc'].textContent:
+			local_storage.storage['admin-link'] = ""
+			document['admin-link'].style.display = "none"
+		else:
+			if local_storage.storage['admin-link'] == "":
+				document['admin-link'].style.display = "none"
+			else:
+				document['admin-link'].style.display = "all"
+	
+		document['admin-link'].href = local_storage.storage['admin-link']
+	except KeyError:
+			local_storage.storage['admin-link'] = ""
+			document['admin-link'].style.display = "none"
+</script>
+</body>
+</html>
